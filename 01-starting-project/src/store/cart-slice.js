@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { uiActions } from "./ui-slice";
 
 const cartSlice = createSlice({
   name: "cart",
@@ -26,19 +27,63 @@ const cartSlice = createSlice({
       }
     },
     removeItemFromCart(state, action) {
-        const id = action.payload;
-        const existingItem = state.items.find(item  => item.id === id);
-        state.totalQuantity--;
-        if (existingItem.quantity === 1) {
-state.items = state.items.filter(item => item.id !== id);
-        } else {
-            existingItem.quantity--;
-            existingItem.totalPrice = existingItem.totalPrice - existingItem.price;
-        };
+      const id = action.payload;
+      const existingItem = state.items.find((item) => item.id === id);
+      state.totalQuantity--;
+      if (existingItem.quantity === 1) {
+        state.items = state.items.filter((item) => item.id !== id);
+      } else {
+        existingItem.quantity--;
+        existingItem.totalPrice = existingItem.totalPrice - existingItem.price;
+      }
     },
   },
 });
 
+const sendCartData = (cart) => {
+  return async (dispatch) => {
+    dispatch(
+      uiActions.showNotification({
+        status: "pending",
+        message: "Sending cart data...",
+        title: "sending",
+      })
+    );
+
+    const sendRequest = async () => {
+      const response = await fetch(
+        "https://react-redux-cat-cart-default-rtdb.firebaseio.com/cart.json",
+        {
+          method: "PUT",
+          body: JSON.stringify(cart),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Sending cart data failed!");
+      }
+    };
+
+    try {
+      await sendRequest();
+
+      dispatch(
+        uiActions.showNotification({
+          status: "success",
+          message: "Sent cart data successfully!",
+          title: "Success!!",
+        })
+      );
+    } catch (error) {
+      dispatch(
+        uiActions.showNotification({
+          status: "error",
+          message: "sending cart data failed!",
+          title: "Error",
+        })
+      );
+    }
+  };
+};
 
 export const cartActions = cartSlice.actions;
 export default cartSlice;
