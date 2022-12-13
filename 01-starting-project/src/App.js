@@ -1,11 +1,13 @@
 import { useSelector, useDispatch } from "react-redux";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect } from "react";
 
 import Cart from "./components/Cart/Cart";
 import Layout from "./components/Layout/Layout";
 import Products from "./components/Shop/Products";
 import { uiActions } from "./store/ui-slice";
 import Notification from "./components/UI/Notification";
+
+let isInitial = true;
 
 function App() {
   const dispatch = useDispatch();
@@ -40,17 +42,17 @@ function App() {
           title: "Success!!",
         })
       );
-
-      sendCartData().catch((error) => {
-        dispatch(
-          uiActions.showNotification({
-            status: "error",
-            message: "sending cart data failed!",
-            title: "Error",
-          })
-        );
-      });
     };
+
+    sendCartData().catch((error) => {
+      dispatch(
+        uiActions.showNotification({
+          status: "error",
+          message: "sending cart data failed!",
+          title: "Error",
+        })
+      );
+    });
   }, [cart, dispatch]);
 
   return (
