@@ -1,7 +1,8 @@
 import { uiActions } from "./ui-slice";
+import { cartActions } from "./cart-slice";
 
 export const fetchCartData = () => {
-  return (dispatch) => {
+  return async (dispatch) => {
     const fetchData = async () => {
       const response = await fetch(
         "https://react-redux-cat-cart-default-rtdb.firebaseio.com/cart.json"
@@ -13,6 +14,22 @@ export const fetchCartData = () => {
       const data = await response.json();
 
       return data;
+    };
+
+    try {
+        const cartData = await fetchData();
+        dispatch(cartActions.replaceCart({
+            items: cartData.items || [],
+            totalQuantity: cartData.totalQuantity,
+        }))
+    } catch (error) {
+        dispatch(
+            uiActions.showNotification({
+              status: "error",
+              message: "fetching cart data failed!",
+              title: "Error",
+            })
+          );
     };
   };
 };
@@ -32,9 +49,13 @@ export const sendCartData = (cart) => {
         "https://react-redux-cat-cart-default-rtdb.firebaseio.com/cart.json",
         {
           method: "PUT",
-          body: JSON.stringify(cart),
+          body: JSON.stringify({
+            item: cart.items,
+            totalQuantity: cart.totalQuantity,
+          }),
         }
       );
+
       if (!response.ok) {
         throw new Error("Sending cart data failed!");
       }
